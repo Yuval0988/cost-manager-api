@@ -57,28 +57,26 @@ router.get('/report', async (req, res) => {
             }
         });
 
-        // Group costs by category with required format
-        const groupedCosts = costs.reduce((acc, cost) => {
-            if (!acc[cost.category]) {
-                acc[cost.category] = [];
-            }
-            acc[cost.category].push({
-                sum: cost.sum,
-                day: cost.date.getDate(),
-                description: cost.description
-            });
-            return acc;
-        }, {});
+        // Create array of category objects
+        const categories = ['food', 'education', 'health', 'housing', 'sport'];
+        const result = [];
 
-        // Ensure all categories exist in response even if empty
-        const categories = ['food', 'health', 'housing', 'sport', 'education'];
+        // Add each category as a separate object in the array
         categories.forEach(category => {
-            if (!groupedCosts[category]) {
-                groupedCosts[category] = [];
-            }
+            const categoryCosts = costs
+                .filter(cost => cost.category === category)
+                .map(cost => ({
+                    sum: cost.sum,
+                    description: cost.description,
+                    day: cost.date.getDate()
+                }));
+
+            result.push({
+                [category]: categoryCosts
+            });
         });
 
-        res.json(groupedCosts);
+        res.json(result);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
