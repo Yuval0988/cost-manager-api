@@ -3,28 +3,28 @@ const router = express.Router();
 const Cost = require('../models/cost');
 const User = require('../models/user');
 
-/**
- * @route POST /api/add
- * @description Add a new cost item
- * @param {string} description - Description of the cost
- * @param {string} category - Category of the cost (food, health, housing, sport, education)
- * @param {string} userid - ID of the user
- * @param {number} sum - Cost amount
- * @returns {Object} JSON object of the created cost
- */
+// POST /api/add - Add new cost item
 router.post('/add', async (req, res) => {
     try {
+        // Validate required parameters
+        const { description, category, userid, sum } = req.body;
+        if (!description || !category || !userid || sum === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters. Required: description, category, userid, sum' 
+            });
+        }
+
         // Check if user exists
-        const userExists = await User.findById(req.body.userid);
+        const userExists = await User.findById(userid);
         if (!userExists) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         const cost = new Cost({
-            description: req.body.description,
-            category: req.body.category,
-            userid: req.body.userid,
-            sum: req.body.sum,
+            description,
+            category,
+            userid,
+            sum,
             date: req.body.date || new Date()
         });
 
@@ -35,21 +35,14 @@ router.post('/add', async (req, res) => {
     }
 });
 
-/**
- * @route GET /api/report
- * @description Get monthly report of costs grouped by category
- * @param {string} id - User ID
- * @param {number} year - Year for the report
- * @param {number} month - Month for the report
- * @returns {Object} JSON object with costs grouped by category
- */
+// GET /api/report - Get monthly report
 router.get('/report', async (req, res) => {
     try {
         const { id, year, month } = req.query;
 
         // Validate required parameters
         if (!id || !year || !month) {
-            return res.status(400).json({ error: 'Missing required parameters' });
+            return res.status(400).json({ error: 'Missing required parameters. Required: id, year, month' });
         }
 
         // Create date range for the specified month
@@ -64,7 +57,7 @@ router.get('/report', async (req, res) => {
             }
         });
 
-        // Group costs by category
+        // Group costs by category with required format
         const groupedCosts = costs.reduce((acc, cost) => {
             if (!acc[cost.category]) {
                 acc[cost.category] = [];
@@ -77,7 +70,7 @@ router.get('/report', async (req, res) => {
             return acc;
         }, {});
 
-        // Ensure all categories exist in response
+        // Ensure all categories exist in response even if empty
         const categories = ['food', 'health', 'housing', 'sport', 'education'];
         categories.forEach(category => {
             if (!groupedCosts[category]) {

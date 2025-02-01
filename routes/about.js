@@ -2,29 +2,29 @@ const express = require('express');
 const router = express.Router();
 
 /**
- * @route GET /api/about
- * @description Get information about the development team
- * @returns {Array} Array of objects containing team members' first and last names
- * @example
- * Response:
- * [
- *   {
- *     "first_name": "John",
- *     "last_name": "Doe"
- *   }
- * ]
+ * GET /api/about - Get developers team information
+ * Returns only first and last names of team members
  */
 router.get('/about', (req, res) => {
-    // Replace with actual team members' information
+    // Return team members with only first_name and last_name
     const developers = [
         {
-            first_name: "John",
-            last_name: "Doe"
+            first_name: "Yuval",
+            last_name: "Shilo"
+        },
+        {
+            first_name: "Shaked",
+            last_name: "Kraidman"
         }
-        // Add other team members here as needed
     ];
     
-    res.json(developers);
+    // Verify each developer object only has first_name and last_name
+    const cleanDevelopers = developers.map(dev => ({
+        first_name: dev.first_name,
+        last_name: dev.last_name
+    }));
+    
+    res.json(cleanDevelopers);
 });
 
 module.exports = router;

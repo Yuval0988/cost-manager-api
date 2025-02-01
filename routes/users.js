@@ -3,23 +3,23 @@ const router = express.Router();
 const User = require('../models/user');
 const Cost = require('../models/cost');
 
-/**
- * @route POST /api/users
- * @description Create a new user
- * @param {string} first_name - User's first name
- * @param {string} last_name - User's last name
- * @param {Date} birthday - User's birthday
- * @param {string} marital_status - User's marital status (single, married, divorced, widowed)
- * @returns {Object} JSON object of the created user
- */
+// POST /api/users - Create a new user
 router.post('/users', async (req, res) => {
     try {
+        // Validate required parameters
+        const { first_name, last_name, birthday, marital_status } = req.body;
+        if (!first_name || !last_name || !birthday || !marital_status) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters. Required: first_name, last_name, birthday, marital_status' 
+            });
+        }
+
         const user = new User({
             _id: req.body._id || '123123', // Default to test user ID if not provided
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            birthday: req.body.birthday,
-            marital_status: req.body.marital_status
+            first_name,
+            last_name,
+            birthday,
+            marital_status
         });
 
         const savedUser = await user.save();
@@ -29,12 +29,7 @@ router.post('/users', async (req, res) => {
     }
 });
 
-/**
- * @route GET /api/users/:id
- * @description Get user details including total costs
- * @param {string} id - User ID
- * @returns {Object} JSON object containing user details and total costs
- */
+// GET /api/users/:id - Get user details with total costs
 router.get('/users/:id', async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -46,10 +41,11 @@ router.get('/users/:id', async (req, res) => {
         const costs = await Cost.find({ userid: user._id });
         const total = costs.reduce((sum, cost) => sum + cost.sum, 0);
 
+        // Return only required fields in specified format
         res.json({
-            id: user._id,
             first_name: user.first_name,
             last_name: user.last_name,
+            id: user._id,
             total
         });
     } catch (error) {
