@@ -1,0 +1,35 @@
+http://localhost:3000
+
+testing getting the about
+-------------------------
+url=http://localhost:3000/api/about/
+data.status_code=200
+b'[{"first_name":"John","last_name":"Doe"}]'
+data.text=[{"first_name":"John","last_name":"Doe"}]
+[{'first_name': 'John', 'last_name': 'Doe'}]
+
+
+testing getting the report - 1
+------------------------------
+url=http://localhost:3000/api/report/?id=123123&year=2025&month=2
+data.status_code=200
+b'{"food":[],"health":[],"housing":[],"sport":[],"education":[]}'
+data.text={"food":[],"health":[],"housing":[],"sport":[],"education":[]}
+
+
+
+testing adding cost item
+----------------------------------
+url=http://localhost:3000/api/add/
+data.status_code=201
+b'{"description":"milk 9","category":"food","userid":"123123","sum":8,"date":"2025-01-31T23:26:20.246Z","_id":"679d5c1c7060ac7842274c8b","__v":0}'
+
+
+testing getting the report - 2
+------------------------------
+url=http://localhost:3000/api/report/?id=123123&year=2025&month=2
+data.status_code=200
+b'{"food":[{"sum":8,"day":1,"description":"milk 9"}],"health":[],"housing":[],"sport":[],"education":[]}'
+data.text={"food":[{"sum":8,"day":1,"description":"milk 9"}],"health":[],"housing":[],"sport":[],"education":[]}
+
+
