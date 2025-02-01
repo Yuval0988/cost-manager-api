@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Cost Item</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 20px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h2>Add New Cost Item</h2>
+    <div class="form-group">
+        <label>Description:</label>
+        <input type="text" id="description" placeholder="Enter description">
+    </div>
+    <div class="form-group">
+        <label>Category:</label>
+        <select id="category">
+            <option value="food">Food</option>
+            <option value="health">Health</option>
+            <option value="housing">Housing</option>
+            <option value="sport">Sport</option>
+            <option value="education">Education</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>User ID:</label>
+        <input type="text" id="userid" value="123123">
+    </div>
+    <div class="form-group">
+        <label>Sum:</label>
+        <input type="number" id="sum" placeholder="Enter amount">
+    </div>
+    <button onclick="addCost()">Add Cost</button>
+    <div id="result"></div>
+
+    <script>
+        async function addCost() {
+            const data = {
+                description: document.getElementById('description').value,
+                category: document.getElementById('category').value,
+                userid: document.getElementById('userid').value,
+                sum: Number(document.getElementById('sum').value)
+            };
+
+            try {
+                const response = await fetch('https://cost-manager-api.onrender.com/api/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -8,6 +9,14 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Redirect root to add-cost.html
+app.get('/api/add', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'add-cost.html'));
+});
 
 // Import routes
 const costRoutes = require('./routes/costs');
