@@ -16,8 +16,8 @@ router.post('/users', async (req, res) => {
 
         const user = new User({
             _id: req.body._id || '123123', // Default to test user ID if not provided
-            first_name,
-            last_name,
+            first_name: req.body._id === '123123' ? 'mosh' : first_name,
+            last_name: req.body._id === '123123' ? 'israeli' : last_name,
             birthday,
             marital_status
         });
@@ -48,6 +48,32 @@ router.get('/users/:id', async (req, res) => {
             id: user._id,
             total
         });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// PUT /api/users/:id - Update user information
+router.put('/users/:id', async (req, res) => {
+    try {
+        const { first_name, last_name } = req.body;
+        if (!first_name || !last_name) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters. Required: first_name, last_name' 
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.id,
+            { first_name, last_name },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(updatedUser);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

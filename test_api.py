@@ -3,7 +3,7 @@ import requests
 
 filename = input("filename=")
 
-line = "https://cost-manager-api.onrender.com"  # Updated to use Render.com URL
+line = "https://cost-manager-api.onrender.com"  # Updated to use your Render.com URL
 
 output = open(filename,"w")
 
@@ -55,7 +55,7 @@ try:
     text = ""
     url = line + "/api/add/"
     data = requests.post(url,
-        json={'userid':'123123', 'description':'milk 9','category':'food','sum':8})
+        json={'userid':123123, 'description':'milk 9','category':'food','sum':8})
     print("url="+url)
     print("data.status_code="+str(data.status_code))
     print(data.content)

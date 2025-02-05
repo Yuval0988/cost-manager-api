@@ -1,0 +1,260 @@
+// Simple utility functions I wrote for the cost manager project
+
+// Function to format a date to YYYY-MM-DD
+function formatDate(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Function to calculate total costs for a category
+function calculateCategoryTotal(costs, category) {
+    return costs
+        .filter(cost => cost.category === category)
+        .reduce((total, cost) => total + cost.sum, 0);
+}
+
+// Function to validate cost input
+function validateCostInput(description, category, sum) {
+    const errors = [];
+    
+    if (!description || description.trim().length === 0) {
+        errors.push("Description is required");
+    }
+    
+    const validCategories = ['food', 'health', 'housing', 'sport', 'education'];
+    if (!validCategories.includes(category)) {
+        errors.push("Invalid category");
+    }
+    
+    if (typeof sum !== 'number' || sum <= 0) {
+        errors.push("Sum must be a positive number");
+    }
+    
+    return errors;
+}
+
+// Function to group costs by month
+function groupCostsByMonth(costs) {
+    const grouped = {};
+    
+    costs.forEach(cost => {
+        const date = new Date(cost.date);
+        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        
+        if (!grouped[monthKey]) {
+            grouped[monthKey] = [];
+        }
+        
+        grouped[monthKey].push(cost);
+    });
+    
+    return grouped;
+}
+
+// Function to get month name
+function getMonthName(monthNumber) {
+    const months = [
+        'January', 'February', 'March', 'April',
+        'May', 'June', 'July', 'August',
+        'September', 'October', 'November', 'December'
+    ];
+    return months[monthNumber - 1];
+}
+
+// Function to create a test user
+async function createTestUser() {
+    const userData = {
+        _id: "123123",
+        first_name: "Test",
+        last_name: "User",
+        birthday: new Date("1990-01-01"),
+        marital_status: "single"
+    };
+    
+    try {
+        const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error("Error creating test user:", error);
+        return null;
+    }
+}
+
+// Function to add a new cost
+async function addNewCost(description, category, sum) {
+    const costData = {
+        description,
+        category,
+        userid: "123123",
+        sum: Number(sum)
+    };
+    
+    try {
+        const response = await fetch('/api/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(costData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error("Error adding cost:", error);
+        return null;
+    }
+}
+
+// Function to get monthly report
+async function getMonthlyReport(year, month) {
+    try {
+        const response = await fetch(`/api/report?id=123123&year=${year}&month=${month}`);
+        const data = await response.json();
+        
+        // Calculate totals for each category
+        const totals = {};
+        Object.keys(data).forEach(category => {
+            totals[category] = calculateCategoryTotal(data[category], category);
+        });
+        
+        return {
+            costs: data,
+            totals: totals
+        };
+    } catch (error) {
+        console.error("Error getting report:", error);
+        return null;
+    }
+}
+
+// Function to format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'ILS'
+    }).format(amount);
+}
+
+// Function to generate test data
+function generateTestCosts() {
+    const categories = ['food', 'health', 'housing', 'sport', 'education'];
+    const descriptions = {
+        food: ['Groceries', 'Restaurant', 'Coffee', 'Snacks'],
+        health: ['Medicine', 'Doctor Visit', 'Gym Membership'],
+        housing: ['Rent', 'Electricity', 'Water', 'Internet'],
+        sport: ['Equipment', 'Training', 'Sports Event'],
+        education: ['Books', 'Course', 'Tuition', 'Supplies']
+    };
+    
+    const costs = [];
+    const today = new Date();
+    
+    // Generate 10 random costs
+    for (let i = 0; i < 10; i++) {
+        const category = categories[Math.floor(Math.random() * categories.length)];
+        const description = descriptions[category][Math.floor(Math.random() * descriptions[category].length)];
+        const sum = Math.floor(Math.random() * 1000) + 1;
+        const date = new Date(today.getFullYear(), today.getMonth(), Math.floor(Math.random() * 28) + 1);
+        
+        costs.push({
+            description,
+            category,
+            sum,
+            date: formatDate(date)
+        });
+    }
+    
+    return costs;
+}
+
+// Function to validate user data
+function validateUserData(userData) {
+    const errors = [];
+    
+    if (!userData.first_name || userData.first_name.trim().length === 0) {
+        errors.push("First name is required");
+    }
+    
+    if (!userData.last_name || userData.last_name.trim().length === 0) {
+        errors.push("Last name is required");
+    }
+    
+    if (!userData.birthday) {
+        errors.push("Birthday is required");
+    } else {
+        const birthDate = new Date(userData.birthday);
+        const today = new Date();
+        if (birthDate >= today) {
+            errors.push("Birthday must be in the past");
+        }
+    }
+    
+    const validMaritalStatuses = ['single', 'married', 'divorced', 'widowed'];
+    if (!validMaritalStatuses.includes(userData.marital_status)) {
+        errors.push("Invalid marital status");
+    }
+    
+    return errors;
+}
+
+// Function to calculate statistics
+function calculateStatistics(costs) {
+    const stats = {
+        totalCosts: 0,
+        averageCost: 0,
+        maxCost: 0,
+        minCost: Infinity,
+        costsByCategory: {},
+        totalItems: costs.length
+    };
+    
+    costs.forEach(cost => {
+        stats.totalCosts += cost.sum;
+        stats.maxCost = Math.max(stats.maxCost, cost.sum);
+        stats.minCost = Math.min(stats.minCost, cost.sum);
+        
+        if (!stats.costsByCategory[cost.category]) {
+            stats.costsByCategory[cost.category] = 0;
+        }
+        stats.costsByCategory[cost.category] += cost.sum;
+    });
+    
+    stats.averageCost = stats.totalItems > 0 ? stats.totalCosts / stats.totalItems : 0;
+    
+    return stats;
+}
+
+// Example usage:
+/*
+// Generate and add test costs
+const testCosts = generateTestCosts();
+testCosts.forEach(cost => {
+    addNewCost(cost.description, cost.category, cost.sum);
+});
+
+// Calculate statistics
+const stats = calculateStatistics(testCosts);
+console.log("Statistics:", stats);
+
+// Validate user data
+const userData = {
+    first_name: "Test",
+    last_name: "User",
+    birthday: "1990-01-01",
+    marital_status: "single"
+};
+const validationErrors = validateUserData(userData);
+if (validationErrors.length > 0) {
+    console.log("Validation errors:", validationErrors);
+} else {
+    console.log("User data is valid");
+}
+*/
